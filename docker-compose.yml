@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  front-end: 
+    build: 
+      context: ./../front-end 
+      dockerfile: ./../front-end/front-end.dockerfile
+    restart: always
+    ports:
+      - "8082:80"
+
+  broker-service: 
+    build: 
+      context: ./../broker-service
+      dockerfile: ./../broker-service/broker-service.dockerfile 
+    restart: always
+    ports:
+      - "8080:80"
+
+  notes-service:
+    build:
+      context: ./../notes-service
+      dockerfile: ./../notes-service/notes-service.dockerfile 
+    restart: always  
+    ports:
+      - "8081:80"
+    environment:
+      DSN: "host=postgres port=5432 user=postgres password=root dbname=notes sslmode=disable"
+
+  listener-service: 
+    build:
+      context: ./../listener-service 
+      dockerfile: ./../listener-service/listener-service.dockerfile
+    
+  postgres: 
+    image: "postgres:14.2"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root 
+      POSTGRES_DB: notes
+    volumes:
+      - ./db-data/postgres/:/var/lib/postgresql/data/
+
+  rabbitmq: 
+    image: 'rabbitmq:3.9-alpine'
+    ports:
+      - "5672:5672"
+    volumes:
+      - ./db-data/rabbitmq/:/var/lib/rabbitmq/
